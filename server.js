@@ -1,7 +1,13 @@
 const express = require("express");
 const session = require("express-session");
+const cors = require("cors");
 
 const app = express();
+
+app.use(cors({
+    origin: "https://aradtyz.github.io",
+    credentials: true
+}));
 
 app.set("trust proxy", 1);
 
