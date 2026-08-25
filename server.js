@@ -23,22 +23,22 @@ app.get("/api/config", (req, res) => {
     res.json(config);
 });
 
-// Admin test
-app.get("/api/admin/test", (req, res) => {
-    res.json({
-        admin: false,
-        message: "Authentication is not implemented yet"
-    });
-});
+// Admin login
+app.post("/api/admin/login", (req, res) => {
+    const { username, password } = req.body;
 
-// Root
-app.get("/", (req, res) => {
-    res.json({
-        name: "GeoQuest Backend",
-        status: "online"
-    });
-});
+    if (
+        username === process.env.ADMIN_USERNAME &&
+        password === process.env.ADMIN_PASSWORD
+    ) {
+        return res.json({
+            success: true,
+            message: "Login successful"
+        });
+    }
 
-app.listen(PORT, "0.0.0.0", () => {
-    console.log(`GeoQuest Backend running on port ${PORT}`);
+    res.status(401).json({
+        success: false,
+        message: "Invalid username or password"
+    });
 });
