@@ -23,6 +23,14 @@ app.get("/api/config", (req, res) => {
     res.json(config);
 });
 
+// Admin test
+app.get("/api/admin/test", (req, res) => {
+    res.json({
+        admin: false,
+        message: "Authentication is not implemented yet"
+    });
+});
+
 // Root
 app.get("/", (req, res) => {
     res.json({
