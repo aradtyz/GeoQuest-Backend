@@ -29,7 +29,7 @@ const PORT = process.env.PORT || 3000;
 
 // GeoQuest configuration
 const config = {
-    maintenance: true
+    maintenance: false 
 };
 
 // Health check
