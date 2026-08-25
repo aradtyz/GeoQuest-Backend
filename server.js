@@ -1,6 +1,7 @@
 const express = require("express");
 const session = require("express-session");
 const cors = require("cors");
+const { createClient } = require("@supabase/supabase-js");
 
 const app = express();
 
@@ -27,10 +28,11 @@ app.use(session({
 
 const PORT = process.env.PORT || 3000;
 
-// GeoQuest configuration
-const config = {
-    maintenance: false 
-};
+// Supabase
+const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SECRET_KEY
+);
 
 // Health check
 app.get("/api/health", (req, res) => {
@@ -40,8 +42,35 @@ app.get("/api/health", (req, res) => {
 });
 
 // Public game configuration
-app.get("/api/config", (req, res) => {
-    res.json(config);
+app.get("/api/config", async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from("settings")
+            .select("maintenance")
+            .eq("id", 1)
+            .single();
+
+        if (error) {
+            console.error("Supabase config error:", error);
+
+            return res.status(500).json({
+                success: false,
+                message: "Could not load configuration"
+            });
+        }
+
+        res.json({
+            maintenance: data.maintenance
+        });
+
+    } catch (error) {
+        console.error("Config error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Backend error"
+        });
+    }
 });
 
 // Admin authentication middleware
@@ -96,7 +125,7 @@ app.post("/api/admin/logout", (req, res) => {
 });
 
 // Change maintenance mode
-app.post("/api/admin/maintenance", requireAdmin, (req, res) => {
+app.post("/api/admin/maintenance", requireAdmin, async (req, res) => {
     const { maintenance } = req.body;
 
     if (typeof maintenance !== "boolean") {
@@ -106,12 +135,39 @@ app.post("/api/admin/maintenance", requireAdmin, (req, res) => {
         });
     }
 
-    config.maintenance = maintenance;
+    try {
+        const { data, error } = await supabase
+            .from("settings")
+            .update({
+                maintenance: maintenance,
+                updated_at: new Date().toISOString()
+            })
+            .eq("id", 1)
+            .select("maintenance")
+            .single();
 
-    res.json({
-        success: true,
-        maintenance: config.maintenance
-    });
+        if (error) {
+            console.error("Supabase update error:", error);
+
+            return res.status(500).json({
+                success: false,
+                message: "Could not update maintenance mode"
+            });
+        }
+
+        res.json({
+            success: true,
+            maintenance: data.maintenance
+        });
+
+    } catch (error) {
+        console.error("Maintenance error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Backend error"
+        });
+    }
 });
 
 // Root
