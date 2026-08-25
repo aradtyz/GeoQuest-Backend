@@ -3,6 +3,8 @@ const session = require("express-session");
 
 const app = express();
 
+app.set("trust proxy", 1);
+
 app.use(express.json());
 
 app.use(session({
