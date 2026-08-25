@@ -38,6 +38,18 @@ app.get("/api/config", (req, res) => {
     res.json(config);
 });
 
+// Admin authentication middleware
+function requireAdmin(req, res, next) {
+    if (req.session.isAdmin !== true) {
+        return res.status(401).json({
+            success: false,
+            message: "Unauthorized"
+        });
+    }
+
+    next();
+}
+
 // Admin login
 app.post("/api/admin/login", (req, res) => {
     const { username, password } = req.body;
@@ -74,6 +86,25 @@ app.post("/api/admin/logout", (req, res) => {
             success: true,
             message: "Logged out"
         });
+    });
+});
+
+// Change maintenance mode
+app.post("/api/admin/maintenance", requireAdmin, (req, res) => {
+    const { maintenance } = req.body;
+
+    if (typeof maintenance !== "boolean") {
+        return res.status(400).json({
+            success: false,
+            message: "maintenance must be true or false"
+        });
+    }
+
+    config.maintenance = maintenance;
+
+    res.json({
+        success: true,
+        maintenance: config.maintenance
     });
 });
 
