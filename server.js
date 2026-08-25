@@ -42,3 +42,16 @@ app.post("/api/admin/login", (req, res) => {
         message: "Invalid username or password"
     });
 });
+
+// Root
+app.get("/", (req, res) => {
+    res.json({
+        name: "GeoQuest Backend",
+        status: "online"
+    });
+});
+
+// Start server
+app.listen(PORT, "0.0.0.0", () => {
+    console.log(`GeoQuest Backend running on port ${PORT}`);
+});
