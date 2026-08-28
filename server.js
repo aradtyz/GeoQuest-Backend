@@ -177,6 +177,38 @@ app.get("/", (req, res) => {
         status: "online"
     });
 });
+app.get("/api/supabase-test", async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from("settings")
+            .select("id, maintenance")
+            .eq("id", 1)
+            .single();
+
+        if (error) {
+            console.error("SUPABASE TEST ERROR:", error);
+
+            return res.status(500).json({
+                connected: false,
+                error: error.message,
+                code: error.code
+            });
+        }
+
+        res.json({
+            connected: true,
+            settings: data
+        });
+
+    } catch (error) {
+        console.error("SUPABASE TEST CRASH:", error);
+
+        res.status(500).json({
+            connected: false,
+            error: error.message
+        });
+    }
+});
 
 // Start server
 app.listen(PORT, "0.0.0.0", () => {
